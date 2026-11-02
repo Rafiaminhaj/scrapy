@@ -40,11 +40,11 @@ class LogStats:
         return o
 
     def spider_opened(self, spider: Spider) -> None:
-        self.pagesprev: int = 0
-        self.itemsprev: int = 0
+        self.pagesprev: int = self.stats.get_value("response_received_count", 0)
+        self.itemsprev: int = self.stats.get_value("item_scraped_count", 0)
 
         self.task = create_looping_call(self.log, spider)
-        self.task.start(self.interval)
+        self.task.start(self.interval, now=False)
 
     def log(self, spider: Spider) -> None:
         self.calculate_stats()

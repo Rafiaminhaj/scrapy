@@ -94,3 +94,18 @@ def test_stats_calculation_no_elapsed_time(
     logstats.spider_closed(crawler.spider, "test reason")
     assert stats.get_value("responses_per_minute") is None
     assert stats.get_value("items_per_minute") is None
+
+
+@coroutine_test
+async def test_spider_opened_skips_initial_log(
+    crawler: Crawler, caplog: pytest.LogCaptureFixture
+) -> None:
+    """Verify that the initial 0-interval log line is skipped on spider_opened."""
+    logstats = build_from_crawler(LogStats, crawler)
+    assert crawler.spider
+    with caplog.at_level("INFO", logger="scrapy.extensions.logstats"):
+        logstats.spider_opened(crawler.spider)
+    assert "Crawled" not in caplog.text
+    if logstats.task and logstats.task.running:
+        logstats.task.stop()
+
